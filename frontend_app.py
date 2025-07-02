@@ -5,7 +5,7 @@ from io import BytesIO
 from output_utils import blog_to_docx
 
 # --- Config ---
-API_URL = "http://127.0.0.1:8000/generate"
+API_URL = "https://ai-first-draft.onrender.com/generate"
 st.set_page_config(page_title="AI First Draft", layout="wide")
 
 # --- Custom CSS: Cursor-inspired ---
