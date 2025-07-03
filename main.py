@@ -1,14 +1,15 @@
-# main.py
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from blog import generate_blog
-from fastapi.middleware.cors import CORSMiddleware
+import os
 
 app = FastAPI()
 
+# CORS for Streamlit
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Or your Streamlit URL
+    allow_origins=["*"],  # or your Streamlit app URL
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -16,41 +17,17 @@ app.add_middleware(
 
 class BlogRequest(BaseModel):
     topic: str
-    tone: str = "Informative"
-    audience: str = "General"
+    tone: str
+    audience: str
 
 @app.post("/generate")
-def generate_blog_api(req: BlogRequest):
+def generate_blog_api(data: BlogRequest):
+    print("Received data:", data)
+    print("API key present:", os.getenv("GROQ_API_KEY") is not None)
     try:
-        blog = generate_blog(req.topic, req.tone, req.audience)
-
-        # Print full response for debugging
-        print("\n--- FULL BLOG RESPONSE ---\n", blog, "\n--------------------------\n")
-
-        # Use safe parsing
-        title = ""
-        meta = ""
-        tags = ""
-        body = blog
-
-        if "**Title:**" in blog:
-            title = blog.split("**Title:**")[1].split("\n")[0].strip()
-
-        if "**Meta Description:**" in blog:
-            meta = blog.split("**Meta Description:**")[1].split("**Tags:**")[0].strip()
-
-        if "**Tags:**" in blog:
-            tags = blog.split("**Tags:**")[1].split("---")[0].strip()
-
-        if "---" in blog:
-            body = blog.split("---")[1].strip()
-
-        return {
-            "title": title,
-            "meta_description": meta,
-            "tags": tags,
-            "body": body
-        }
-
+        result = generate_blog(data.topic, data.tone, data.audience)
+        print("Blog generated successfully.")
+        return result
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        print("ERROR while generating blog:", str(e))
+        return {"error": "Internal server error"}
