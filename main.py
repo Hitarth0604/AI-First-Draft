@@ -2,8 +2,17 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from blog import generate_blog
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Or your Streamlit URL
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 class BlogRequest(BaseModel):
     topic: str
